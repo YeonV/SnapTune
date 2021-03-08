@@ -1,0 +1,69 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  margin-right: 3rem;
+  width: 350px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  } */
+}
+
+.App-header {
+  /* background-color: #282c34; */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.snap-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  margin-top: 1rem;
+  flex-direction: column;
+}
+
+.App-link {
+  color: #61dafb;
+}
+.cardWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.tuneHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  margin-top: 1rem;
+}
+.tuneLogoName {
+  background-repeat: no-repeat;
+  background-position: 0% 78%;
+  background-size: 106%;
+  width: 400px;
+  height: 75px;
+  margin: 2rem 0;
+}
+.tuneCardWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
