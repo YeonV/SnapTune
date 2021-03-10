@@ -46,6 +46,7 @@ interface GroupConfig {
   id: string;
   groupMuted: boolean;
   snapcastStreams: [];
+  snapcastServerEndpoint: string;
 }
 
 export default function GroupCard(config: GroupConfig) {
@@ -55,7 +56,7 @@ export default function GroupCard(config: GroupConfig) {
     (s: { id: "" }) => s.id === config.stream_id
   );
   const handleMute = () => {
-    const ws = new WebSocket(`ws://192.168.1.204:1780/jsonrpc`);
+    const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}`);
     const request = {
       id: "8",
       jsonrpc: "2.0",
@@ -68,14 +69,14 @@ export default function GroupCard(config: GroupConfig) {
     );
   };
   useEffect(() => {
-    const ws = new WebSocket(`ws://192.168.1.204:1780/jsonrpc`);
+    const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}`);
     ws.addEventListener("message", (message) => {
       const { method, params } = JSON.parse(message.data);
       if (method === "Group.OnMute" && params.id === config.id) {
         setGroupMuted(params.mute);
       }
     });
-  }, [groupMuted, config.id]);
+  }, [groupMuted, config.id, config.snapcastServerEndpoint]);
   return (
     <Card className={classes.root}>
       <div
@@ -136,6 +137,7 @@ export default function GroupCard(config: GroupConfig) {
             deviceMuted={c.config.volume.muted}
             connected={c.connected}
             ip={c.host.ip}
+            snapcastServerEndpoint={config.snapcastServerEndpoint}
           />
         ))}
       </CardActions>

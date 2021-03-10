@@ -1,0 +1,21 @@
+version: "3"
+services:
+  frontend:
+    build: ./frontend
+    image: "blade86/tuneblade-snapcast-webui:latest"
+    networks:
+      - snap
+  backend:
+    build: ./api
+    image: "blade86/tuneblade-api-proxy:latest"
+    networks:
+      - snap
+  revproxy:
+    build: ./nginx
+    image: "blade86/reverseproxy:latest"
+    networks:
+      - snap
+    ports:
+      - "80:80"
+networks:
+  snap:

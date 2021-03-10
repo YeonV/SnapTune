@@ -14,7 +14,9 @@ import {
   DialogContentText,
   DialogTitle,
   Grid,
+  // InputAdornment,
   Typography,
+  TextField,
 } from "@material-ui/core";
 import DeviceCardTune from "./components/DeviceCardTune";
 import GroupCard from "./components/GroupCard";
@@ -26,6 +28,15 @@ function App() {
   const [snapcastGroups, setSnapcastGroups] = React.useState<any[]>([]);
   const [snapcastStreams, setSnapcastStreams] = React.useState<any>([]);
   const [snapcastServer, setSnapcastServer] = React.useState<any>({});
+  const snapcastServerEndpoint =
+    process.env.REACT_APP_SNAPCAST_ENDPOINT || "192.168.1.204:1780/jsonrpc";
+
+  // const [
+  //   snapcastServerEndpoint,
+  //   setSnapcastServerEndpoint,
+  // ] = React.useState<string>(
+  //   process.env.REACT_APP_SNAPCAST_ENDPOINT || "192.168.1.204:1780/jsonrpc"
+  // );
   const [themmeType, setThemeType] = React.useState<"light" | "dark">("dark");
   const [colorPrimary, setColorPrimary] = React.useState<any>("#fdbf07");
   const [colorSecondary, setColorSecondary] = React.useState<any>("#800000");
@@ -74,6 +85,7 @@ function App() {
     if (res.status === 200) {
       const resp = await res.text();
       const devices = resp.split("\n").filter((d) => d !== "");
+      console.log(typeof devices);
       const deviceList = devices.map((d, i) =>
         d.replaceAll("  ", " ").split(" ")
       );
@@ -88,30 +100,37 @@ function App() {
       method: "Server.GetStatus",
     };
     const getSnapCastInfos = async () => {
-      const ws = new WebSocket(`ws://192.168.1.204:1780/jsonrpc`);
-      ws.addEventListener("message", (message) => {});
+      const ws = new WebSocket(`ws://${snapcastServerEndpoint}`);
+      ws.addEventListener("message", (message) => {
+        const { groups, server, streams } = JSON.parse(
+          message.data
+        ).result.server;
+        setSnapcastGroups(groups);
+        setSnapcastStreams(streams);
+        setSnapcastServer(server);
+      });
       ws.addEventListener("open", () =>
         ws.send(JSON.stringify(++request.id && request))
       );
-      const response = await fetch(`/snap/get`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(++request.id && request),
-      });
-      const content = await response.json();
-      const { groups, server, streams } = JSON.parse(content).result.server;
-      setSnapcastGroups(groups);
-      setSnapcastStreams(streams);
-      setSnapcastServer(server);
+      // const response = await fetch(`/snap/get`, {
+      //   method: "POST",
+      //   headers: {
+      //     Accept: "application/json",
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify(++request.id && request),
+      // });
+      // const content = await response.json();
+      // const { groups, server, streams } = JSON.parse(content).result.server;
+      // setSnapcastGroups(groups);
+      // setSnapcastStreams(streams);
+      // setSnapcastServer(server);
     };
 
     getTunebladeDevices();
     getSnapCastInfos();
-  }, [getTunebladeDevices]);
-
+  }, [getTunebladeDevices, snapcastServerEndpoint]);
+  console.log(process.env.REACT_APP_SNAPCAST_ENDPOINT);
   return (
     <MuiThemeProvider theme={themeyz}>
       <div
@@ -158,6 +177,7 @@ function App() {
                   groupMuted={g.muted}
                   number_clients={g.clients.length}
                   name={g.name || `Group ${i} (${g.clients.length} Clients)`}
+                  snapcastServerEndpoint={snapcastServerEndpoint}
                 />
               ))}
           </div>
@@ -193,12 +213,21 @@ function App() {
         <DialogTitle id="alert-dialog-title">
           {"Settings"}
 
-          <Typography color="textSecondary" variant="subtitle1" gutterBottom>
-            {snapcastServer?.snapserver?.name} -{" "}
-            {snapcastServer &&
-              snapcastServer.snapserver &&
-              snapcastServer.snapserver.version}
+          <Typography
+            color="textSecondary"
+            variant="subtitle1"
+            style={{ marginBottom: "1rem" }}
+          >
+            bla bla bla
           </Typography>
+          <TextField
+            disabled
+            label={`Connected to ${snapcastServer?.snapserver?.name} v${snapcastServer?.snapserver?.version} via`}
+            id="websocket-connection"
+            value={`ws://${snapcastServerEndpoint}`}
+            variant="outlined"
+            style={{ width: "100%" }}
+          />
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
