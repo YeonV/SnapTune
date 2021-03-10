@@ -84,12 +84,15 @@ function App() {
     const res = await fetch("/get");
     if (res.status === 200) {
       const resp = await res.text();
-      const devices = resp.split("\n").filter((d) => d !== "");
-      console.log(typeof devices);
-      const deviceList = devices.map((d, i) =>
-        d.replaceAll("  ", " ").split(" ")
-      );
-      setTest(deviceList);
+      if (resp.startsWith("MASTER ")) {
+        const devices = resp.split("\n").filter((d) => d !== "");
+        const deviceList = devices.map((d, i) =>
+          d.replaceAll("  ", " ").split(" ")
+        );
+        setTest(deviceList);
+      } else {
+        alert("No TuneBlade Server found");
+      }
     }
   }, []);
 
@@ -102,35 +105,28 @@ function App() {
     const getSnapCastInfos = async () => {
       const ws = new WebSocket(`ws://${snapcastServerEndpoint}`);
       ws.addEventListener("message", (message) => {
-        const { groups, server, streams } = JSON.parse(
-          message.data
-        ).result.server;
-        setSnapcastGroups(groups);
-        setSnapcastStreams(streams);
-        setSnapcastServer(server);
+        if (
+          message.data &&
+          JSON.parse(message.data).id &&
+          JSON.parse(message.data).id === 1
+        ) {
+          const { groups, server, streams } = JSON.parse(
+            message.data
+          ).result.server;
+          setSnapcastGroups(groups);
+          setSnapcastStreams(streams);
+          setSnapcastServer(server);
+        }
       });
       ws.addEventListener("open", () =>
         ws.send(JSON.stringify(++request.id && request))
       );
-      // const response = await fetch(`/snap/get`, {
-      //   method: "POST",
-      //   headers: {
-      //     Accept: "application/json",
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(++request.id && request),
-      // });
-      // const content = await response.json();
-      // const { groups, server, streams } = JSON.parse(content).result.server;
-      // setSnapcastGroups(groups);
-      // setSnapcastStreams(streams);
-      // setSnapcastServer(server);
     };
 
     getTunebladeDevices();
     getSnapCastInfos();
   }, [getTunebladeDevices, snapcastServerEndpoint]);
-  console.log(process.env.REACT_APP_SNAPCAST_ENDPOINT);
+  // console.log(process.env.REACT_APP_SNAPCAST_ENDPOINT);
   return (
     <MuiThemeProvider theme={themeyz}>
       <div

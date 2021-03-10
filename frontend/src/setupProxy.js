@@ -5,7 +5,21 @@ module.exports = function (app) {
     "/get",
     createProxyMiddleware({
       target: `http://localhost:3001/`,
-      changeOrigin: false,
+      changeOrigin: true,
+    })
+  );
+  app.use(
+    "/stat",
+    createProxyMiddleware({
+      target: `http://localhost:3001/`,
+      changeOrigin: true,
+    })
+  );
+  app.use(
+    "/vol",
+    createProxyMiddleware({
+      target: `http://localhost:3001/`,
+      changeOrigin: true,
     })
   );
 };

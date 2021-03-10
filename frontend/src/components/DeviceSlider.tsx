@@ -41,16 +41,11 @@ export default function DeviceSlider(config: SliderConfig) {
       method: "Client.SetVolume",
       params: { id: config.id, volume: { muted: false, percent: newValue } },
     };
-    const response = await fetch(`/snap/get`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(++(request as any).id && request),
-    });
-    const content = await response.json();
-    console.log(JSON.parse(content)); // {"id":3,"jsonrpc":"2.0","result":{"major":2,"minor":0,"patch":0}}
+
+    const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}`);
+    ws.addEventListener("open", () =>
+      ws.send(JSON.stringify(++(request as any).id && request))
+    );
   };
 
   useEffect(() => {
