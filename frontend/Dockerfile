@@ -21,7 +21,7 @@ FROM node:13.12.0-alpine as build
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 COPY . /app
-RUN npm ci --loglevel verbose
+RUN npm install
 ARG SNAPCAST_HOST
 RUN REACT_APP_SNAPCAST_ENDPOINT=${SNAPCAST_HOST} npm run build
 # # stage 2
