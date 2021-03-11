@@ -7,7 +7,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const app = express();
-const port = 3001;
+const port = 8000;
 app.use(bodyParser.json());
 app.use(cors());
 // app.use((req, res, next) => {
@@ -84,4 +84,8 @@ app.get("/api/stat/:id/:stat", (req, res, next) => {
   );
 });
 
-app.listen(port, "0.0.0.0", () => console.log(`http://localhost:${port}`));
+app.listen(port, "0.0.0.0", () =>
+  console.log(
+    `http://localhost:${port} calling to ${process.env.REACT_APP_TUNEBLADE_ENDPOINT}`
+  )
+);
