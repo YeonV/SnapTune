@@ -36,7 +36,7 @@ export default function DeviceCardTune(config: Device) {
 
   const setStatus = async () => {
     const res = await fetch(
-      `/stat/${config.id}/${config.connected ? "Disconnect" : "Connect"}`
+      `/api/stat/${config.id}/${config.connected ? "Disconnect" : "Connect"}`
     );
     if (res.status === 200) {
       await res.text();

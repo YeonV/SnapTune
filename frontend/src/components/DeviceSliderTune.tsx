@@ -22,7 +22,7 @@ export default function DeviceSlider(config: DeviceSliderConfig) {
   const [value, setValue] = React.useState(config.volume);
 
   const setVolume = async (val: number, id: string) => {
-    const res = await fetch(`/vol/${id}/${val}`);
+    const res = await fetch(`/api/vol/${id}/${val}`);
     if (res.status === 200) {
       const resp = await res.text();
       if (typeof resp !== "string") {

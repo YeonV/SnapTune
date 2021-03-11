@@ -49,5 +49,39 @@ app.get("/stat/:id/:stat", (req, res, next) => {
     }
   );
 });
+app.get("/api/get", (req, res, next) => {
+  request.get(
+    `http://${process.env.REACT_APP_TUNEBLADE_ENDPOINT}/v2`,
+    (err, response, body) => {
+      if (err) {
+        return next(err);
+      }
+      res.send(body);
+    }
+  );
+});
+app.get("/api/vol/:id/:vol", (req, res, next) => {
+  request.get(
+    `http://${process.env.REACT_APP_TUNEBLADE_ENDPOINT}/v2/${req.params.id}/Volume/${req.params.vol}`,
+    (err, response, body) => {
+      if (err) {
+        return next(err);
+      }
+      res.send(body);
+    }
+  );
+});
+app.get("/api/stat/:id/:stat", (req, res, next) => {
+  console.log(req.params.id, req.params.stat);
+  request.get(
+    `http://${process.env.REACT_APP_TUNEBLADE_ENDPOINT}/v2/${req.params.id}/Status/${req.params.stat}`,
+    (err, response, body) => {
+      if (err) {
+        return next(err);
+      }
+      res.send(body);
+    }
+  );
+});
 
 app.listen(port, "0.0.0.0", () => console.log(`http://localhost:${port}`));

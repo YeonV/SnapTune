@@ -81,7 +81,7 @@ function App() {
   };
 
   const getTunebladeDevices = useCallback(async () => {
-    const res = await fetch("/get");
+    const res = await fetch("/api/get");
     if (res.status === 200) {
       const resp = await res.text();
       if (resp.startsWith("MASTER ")) {
