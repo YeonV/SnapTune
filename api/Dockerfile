@@ -19,11 +19,11 @@
 
 # EXPOSE 80
 # CMD [ "node", "server.js" ]
-FROM node:13.12.0-alpine
+FROM node:14.16.0-alpine
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 COPY . /app
-RUN npm ci --loglevel verbose
+RUN npm install
 EXPOSE 80
 ARG TUNEBLADE_HOST
 CMD [ "REACT_APP_TUNEBLADE_ENDPOINT=${TUNEBLADE_HOST}", "node", "server.js" ]

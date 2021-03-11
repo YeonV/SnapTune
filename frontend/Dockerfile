@@ -17,15 +17,15 @@
 # CMD ["nginx", "-g", "daemon off;"]
 # dockerfile
 # stage 1
-FROM node:13.12.0-alpine as build
+FROM node:14.16.0-alpine as build
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 COPY . /app
-RUN npm install
+RUN yarn
 ARG SNAPCAST_HOST
-RUN REACT_APP_SNAPCAST_ENDPOINT=${SNAPCAST_HOST} npm run build
+RUN REACT_APP_SNAPCAST_ENDPOINT=${SNAPCAST_HOST} yarn build
 # # stage 2
 FROM nginx:1.16.0-alpine
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/build /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
