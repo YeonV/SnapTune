@@ -56,7 +56,7 @@ export default function GroupCard(config: GroupConfig) {
     (s: { id: "" }) => s.id === config.stream_id
   );
   const handleMute = () => {
-    const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}`);
+    const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}/jsonrpc`);
     const request = {
       id: "8",
       jsonrpc: "2.0",
@@ -69,7 +69,7 @@ export default function GroupCard(config: GroupConfig) {
     );
   };
   useEffect(() => {
-    const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}`);
+    const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}/jsonrpc`);
     ws.addEventListener("message", (message) => {
       const { method, params } = JSON.parse(message.data);
       if (method === "Group.OnMute" && params.id === config.id) {

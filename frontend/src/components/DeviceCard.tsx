@@ -49,7 +49,7 @@ export default function DeviceCard(config: Device) {
   );
 
   const handleMute = () => {
-    const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}`);
+    const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}/jsonrpc`);
     const request = {
       id: "8",
       jsonrpc: "2.0",
@@ -63,7 +63,7 @@ export default function DeviceCard(config: Device) {
 
   useEffect(() => {
     const onVolumeChanged = () => {
-      const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}`);
+      const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}/jsonrpc`);
       ws.addEventListener("message", (message) => {
         const { method, params } = JSON.parse(message.data);
         if (method === "Client.OnVolumeChanged" && params.id === config.id) {

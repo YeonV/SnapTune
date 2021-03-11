@@ -42,7 +42,7 @@ export default function DeviceSlider(config: SliderConfig) {
       params: { id: config.id, volume: { muted: false, percent: newValue } },
     };
 
-    const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}`);
+    const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}/jsonrpc`);
     ws.addEventListener("open", () =>
       ws.send(JSON.stringify(++(request as any).id && request))
     );
@@ -50,7 +50,7 @@ export default function DeviceSlider(config: SliderConfig) {
 
   useEffect(() => {
     const onVolumeChanged = () => {
-      const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}`);
+      const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}/jsonrpc`);
       ws.addEventListener("message", (message) => {
         const { method, params } = JSON.parse(message.data);
         if (method === "Client.OnVolumeChanged" && params.id === config.id) {

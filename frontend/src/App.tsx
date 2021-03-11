@@ -103,7 +103,7 @@ function App() {
       method: "Server.GetStatus",
     };
     const getSnapCastInfos = async () => {
-      const ws = new WebSocket(`ws://${snapcastServerEndpoint}`);
+      const ws = new WebSocket(`ws://${snapcastServerEndpoint}/jsonrpc`);
       ws.addEventListener("message", (message) => {
         if (
           message.data &&

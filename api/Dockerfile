@@ -25,4 +25,5 @@ ENV PATH /app/node_modules/.bin:$PATH
 COPY . /app
 RUN npm ci --loglevel verbose
 EXPOSE 80
-CMD [ "REACT_APP_TUNEBLADE_ENDPOINT=192.168.1.56:1337", "node", "server.js" ]
+ARG TUNEBLADE_HOST
+CMD [ "REACT_APP_TUNEBLADE_ENDPOINT=${TUNEBLADE_HOST}", "node", "server.js" ]

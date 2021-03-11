@@ -22,7 +22,8 @@ WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 COPY . /app
 RUN npm ci --loglevel verbose
-RUN REACT_APP_SNAPCAST_ENDPOINT=192.168.1.204:1780/jsonrpc npm run build
+ARG SNAPCAST_HOST
+RUN REACT_APP_SNAPCAST_ENDPOINT=${SNAPCAST_HOST} npm run build
 # # stage 2
 FROM nginx:1.16.0-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
