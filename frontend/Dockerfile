@@ -22,8 +22,7 @@ WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 COPY . /app
 RUN yarn
-ARG SNAPCAST_HOST
-RUN REACT_APP_SNAPCAST_ENDPOINT=${SNAPCAST_HOST} yarn build
+RUN yarn build
 # # stage 2
 FROM nginx:1.16.0-alpine
 COPY --from=build /app/build /usr/share/nginx/html

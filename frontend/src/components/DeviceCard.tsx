@@ -39,7 +39,7 @@ interface Device {
   deviceMuted: boolean;
   id: string;
   groupId: string;
-  snapcastServerEndpoint: string;
+  snapcastServerHost: string;
 }
 
 export default function DeviceCard(config: Device) {
@@ -49,7 +49,7 @@ export default function DeviceCard(config: Device) {
   );
 
   const handleMute = () => {
-    const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}/jsonrpc`);
+    const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
     const request = {
       id: "8",
       jsonrpc: "2.0",
@@ -63,7 +63,7 @@ export default function DeviceCard(config: Device) {
 
   useEffect(() => {
     const onVolumeChanged = () => {
-      const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}/jsonrpc`);
+      const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
       ws.addEventListener("message", (message) => {
         const { method, params } = JSON.parse(message.data);
         if (method === "Client.OnVolumeChanged" && params.id === config.id) {
@@ -72,12 +72,7 @@ export default function DeviceCard(config: Device) {
       });
     };
     onVolumeChanged();
-  }, [
-    deviceMuted,
-    config.id,
-    config.groupMuted,
-    config.snapcastServerEndpoint,
-  ]);
+  }, [deviceMuted, config.id, config.groupMuted, config.snapcastServerHost]);
 
   return (
     <Card className={classes.root}>
@@ -104,7 +99,7 @@ export default function DeviceCard(config: Device) {
           deviceMuted={config.deviceMuted}
           volume={config.volume}
           id={config.id}
-          snapcastServerEndpoint={config.snapcastServerEndpoint}
+          snapcastServerHost={config.snapcastServerHost}
         />
       </CardActions>
     </Card>

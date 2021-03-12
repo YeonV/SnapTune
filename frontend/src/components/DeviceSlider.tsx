@@ -17,7 +17,7 @@ interface SliderConfig {
   groupMuted: boolean;
   deviceMuted: boolean;
   groupId: string;
-  snapcastServerEndpoint: string;
+  snapcastServerHost: string;
 }
 
 export default function DeviceSlider(config: SliderConfig) {
@@ -42,7 +42,7 @@ export default function DeviceSlider(config: SliderConfig) {
       params: { id: config.id, volume: { muted: false, percent: newValue } },
     };
 
-    const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}/jsonrpc`);
+    const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
     ws.addEventListener("open", () =>
       ws.send(JSON.stringify(++(request as any).id && request))
     );
@@ -50,7 +50,7 @@ export default function DeviceSlider(config: SliderConfig) {
 
   useEffect(() => {
     const onVolumeChanged = () => {
-      const ws = new WebSocket(`ws://${config.snapcastServerEndpoint}/jsonrpc`);
+      const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
       ws.addEventListener("message", (message) => {
         const { method, params } = JSON.parse(message.data);
         if (method === "Client.OnVolumeChanged" && params.id === config.id) {
@@ -69,7 +69,7 @@ export default function DeviceSlider(config: SliderConfig) {
     deviceMuted,
     config.groupId,
     config.id,
-    config.snapcastServerEndpoint,
+    config.snapcastServerHost,
   ]);
 
   return (

@@ -1,5 +1,7 @@
 const express = require("express");
 const request = require("request");
+const path = require("path");
+
 const fetch = require("node-fetch");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -48,6 +50,9 @@ app.get("/stat/:id/:stat", (req, res, next) => {
       res.send(body);
     }
   );
+});
+app.get("/api/config", (req, res, next) => {
+  res.json({ snap: process.env.REACT_APP_SNAPCAST_ENDPOINT });
 });
 app.get("/api/get", (req, res, next) => {
   request.get(

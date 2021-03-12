@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from "react";
-import snap from "./static/images/snapcast-blademod2.png";
+import snap from "./static/images/snapcast-blue-blademod.png";
 import tuneblade from "./static/images/tuneblade.svg";
-import tunebladeLogo from "./static/images/tuneblademod_150.png";
+import tunebladeLogo from "./static/images/tuneblade_150_blue.png";
 import "./App.css";
 import {
   MuiThemeProvider,
@@ -28,18 +28,10 @@ function App() {
   const [snapcastGroups, setSnapcastGroups] = React.useState<any[]>([]);
   const [snapcastStreams, setSnapcastStreams] = React.useState<any>([]);
   const [snapcastServer, setSnapcastServer] = React.useState<any>({});
-  const snapcastServerEndpoint =
-    process.env.REACT_APP_SNAPCAST_ENDPOINT || "192.168.1.204:1780/jsonrpc";
-
-  // const [
-  //   snapcastServerEndpoint,
-  //   setSnapcastServerEndpoint,
-  // ] = React.useState<string>(
-  //   process.env.REACT_APP_SNAPCAST_ENDPOINT || "192.168.1.204:1780/jsonrpc"
-  // );
+  const [snapcastServerHost, setSnapcastServerHost] = React.useState("");
   const [themmeType, setThemeType] = React.useState<"light" | "dark">("dark");
-  const [colorPrimary, setColorPrimary] = React.useState<any>("#fdbf07");
-  const [colorSecondary, setColorSecondary] = React.useState<any>("#800000");
+  const [colorPrimary, setColorPrimary] = React.useState<any>("#05D9E8");
+  const [colorSecondary, setColorSecondary] = React.useState<any>("#021E4C");
 
   const handleChangePrimary = (newValue: Color) => {
     setColorPrimary(`#${newValue.hex}`);
@@ -95,6 +87,15 @@ function App() {
       }
     }
   }, []);
+  const getConfig = useCallback(async () => {
+    const res = await fetch("/api/config");
+    if (res.status === 200) {
+      const resp = await res.json();
+      setSnapcastServerHost(resp.snap);
+    } else {
+      alert("No TuneBlade Server found");
+    }
+  }, []);
 
   useEffect(() => {
     const request = {
@@ -103,30 +104,32 @@ function App() {
       method: "Server.GetStatus",
     };
     const getSnapCastInfos = async () => {
-      const ws = new WebSocket(`ws://${snapcastServerEndpoint}/jsonrpc`);
-      ws.addEventListener("message", (message) => {
-        if (
-          message.data &&
-          JSON.parse(message.data).id &&
-          JSON.parse(message.data).id === 1
-        ) {
-          const { groups, server, streams } = JSON.parse(
-            message.data
-          ).result.server;
-          setSnapcastGroups(groups);
-          setSnapcastStreams(streams);
-          setSnapcastServer(server);
-        }
-      });
-      ws.addEventListener("open", () =>
-        ws.send(JSON.stringify(++request.id && request))
-      );
+      if (snapcastServerHost !== "") {
+        const ws = new WebSocket(`ws://${snapcastServerHost}/jsonrpc`);
+        ws.addEventListener("message", (message) => {
+          if (
+            message.data &&
+            JSON.parse(message.data).id &&
+            JSON.parse(message.data).id === 1
+          ) {
+            const { groups, server, streams } = JSON.parse(
+              message.data
+            ).result.server;
+            setSnapcastGroups(groups);
+            setSnapcastStreams(streams);
+            setSnapcastServer(server);
+          }
+        });
+        ws.addEventListener("open", () =>
+          ws.send(JSON.stringify(++request.id && request))
+        );
+      }
     };
 
     getTunebladeDevices();
     getSnapCastInfos();
-  }, [getTunebladeDevices, snapcastServerEndpoint]);
-  // console.log(process.env.REACT_APP_SNAPCAST_ENDPOINT);
+    getConfig();
+  }, [getTunebladeDevices, snapcastServerHost]);
   return (
     <MuiThemeProvider theme={themeyz}>
       <div
@@ -173,7 +176,7 @@ function App() {
                   groupMuted={g.muted}
                   number_clients={g.clients.length}
                   name={g.name || `Group ${i} (${g.clients.length} Clients)`}
-                  snapcastServerEndpoint={snapcastServerEndpoint}
+                  snapcastServerHost={snapcastServerHost}
                 />
               ))}
           </div>
@@ -220,7 +223,7 @@ function App() {
             disabled
             label={`Connected to ${snapcastServer?.snapserver?.name} v${snapcastServer?.snapserver?.version} via`}
             id="websocket-connection"
-            value={`ws://${snapcastServerEndpoint}`}
+            value={`ws://${snapcastServerHost}`}
             variant="outlined"
             style={{ width: "100%" }}
           />
