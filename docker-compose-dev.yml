@@ -8,7 +8,7 @@ services:
   backend:
     environment:
       TUNEBLADE_HOST: "192.168.1.56:1337"
-      SNAPCAST_HOST: "192.168.1.204:1780" # replace with resolving name later
+      SNAPCAST_HOST: "192.168.1.204:1780"
     build:
       context: ./api
     networks:
