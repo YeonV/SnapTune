@@ -3,18 +3,18 @@ services:
   frontend:
     environment:
       SNAPCAST_HOST: "192.168.1.204:1780" # replace with resolving name later
-    image: "blade86/snaptune-webui:latest"
+    image: "blade86/snaptune-webui:0.0.2"
     networks:
       - snap
   backend:
     environment:
       TUNEBLADE_HOST: "192.168.1.56:1337"
       SNAPCAST_HOST: "192.168.1.204:1780"
-    image: "blade86/snaptune-api:0.0.1"
+    image: "blade86/snaptune-api:0.0.2"
     networks:
       - snap
   revproxy:
-    image: "blade86/snaptune-proxy:latest"
+    image: "blade86/snaptune-proxy:0.0.2"
     networks:
       - snap
     ports:
