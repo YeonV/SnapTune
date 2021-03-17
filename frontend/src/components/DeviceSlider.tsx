@@ -1,9 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect,useContext } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Slider from "@material-ui/core/Slider";
 import VolumeDown from "@material-ui/icons/VolumeDown";
 import VolumeUp from "@material-ui/icons/VolumeUp";
+import { WsContext } from './Websocket';
+// import ws from "./Websocket"
 
 const useStyles = makeStyles({
   root: {
@@ -29,29 +31,26 @@ export default function DeviceSlider(config: SliderConfig) {
   const [deviceMuted, setDeviceMuted] = React.useState<boolean>(
     config.deviceMuted
   );
+  const ws = useContext(WsContext);
+
 
   const handleDrag = (event: any, newValue: number | number[]) => {
-    setValue(newValue as number);
-  };
-  const handleRelease = async (event: any, newValue: number | number[]) => {
-    setValue(newValue as number);
-    const request = {
-      id: "8",
-      jsonrpc: "2.0",
-      method: "Client.SetVolume",
-      params: { id: config.id, volume: { muted: false, percent: newValue } },
-    };
-
-    const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
-    ws.addEventListener("open", () =>
+    if (newValue !== value) {
+      setValue(newValue as number);
+      const request = {
+        id: 8,
+        jsonrpc: "2.0",
+        method: "Client.SetVolume",
+        params: { id: config.id, volume: { muted: false, percent: newValue } },
+      };    
       ws.send(JSON.stringify(++(request as any).id && request))
-    );
+    }
   };
 
   useEffect(() => {
     const onVolumeChanged = () => {
-      const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
       ws.addEventListener("message", (message) => {
+        console.log("SLIDER", JSON.parse(message.data))
         const { method, params } = JSON.parse(message.data);
         if (method === "Client.OnVolumeChanged" && params.id === config.id) {
           setValue(params.volume.percent);
@@ -65,6 +64,7 @@ export default function DeviceSlider(config: SliderConfig) {
 
     onVolumeChanged();
   }, [
+    ws,
     groupMuted,
     deviceMuted,
     config.groupId,
@@ -83,7 +83,6 @@ export default function DeviceSlider(config: SliderConfig) {
             disabled={groupMuted || deviceMuted}
             value={value}
             onChange={handleDrag}
-            onChangeCommitted={handleRelease}
             aria-labelledby="continuous-slider"
           />
         </Grid>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
@@ -8,6 +8,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import DeviceCard from "./DeviceCard";
 import { VolumeUp, VolumeOff } from "@material-ui/icons";
 import { Select, Typography } from "@material-ui/core";
+import { WsContext } from './Websocket';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -52,31 +53,30 @@ interface GroupConfig {
 export default function GroupCard(config: GroupConfig) {
   const classes = useStyles();
   const [groupMuted, setGroupMuted] = useState<any>(config.groupMuted);
+  const ws = useContext(WsContext);
   const currentStream = config.snapcastStreams.find(
     (s: { id: "" }) => s.id === config.stream_id
   );
   const handleMute = () => {
-    const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
+    // const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
     const request = {
       id: "8",
       jsonrpc: "2.0",
       method: "Group.SetMute",
       params: { id: config.id, mute: !groupMuted },
-    };
-
-    ws.addEventListener("open", () =>
-      ws.send(JSON.stringify(++(request as any).id && request))
-    );
+    };    
+    ws.send(JSON.stringify(++(request as any).id && request))    
   };
   useEffect(() => {
-    const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
+    // const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
     ws.addEventListener("message", (message) => {
+      console.log("GROUP", JSON.parse(message.data))
       const { method, params } = JSON.parse(message.data);
       if (method === "Group.OnMute" && params.id === config.id) {
         setGroupMuted(params.mute);
       }
     });
-  }, [groupMuted, config.id, config.snapcastServerHost]);
+  }, [groupMuted, config.id,ws]);
   return (
     <Card className={classes.root}>
       <div

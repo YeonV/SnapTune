@@ -22,6 +22,7 @@ import DeviceCardTune from "./components/DeviceCardTune";
 import GroupCard from "./components/GroupCard";
 import { Settings } from "@material-ui/icons";
 import { Color, ColorPicker } from "material-ui-color";
+import ws, { WsContext } from "./components/Websocket"
 
 function App() {
   const [test, setTest] = React.useState([[""], [""]]);
@@ -32,6 +33,7 @@ function App() {
   const [themmeType, setThemeType] = React.useState<"light" | "dark">("dark");
   const [colorPrimary, setColorPrimary] = React.useState<any>("#05D9E8");
   const [colorSecondary, setColorSecondary] = React.useState<any>("#021E4C");
+  
 
   const handleChangePrimary = (newValue: Color) => {
     setColorPrimary(`#${newValue.hex}`);
@@ -97,16 +99,19 @@ function App() {
     }
   }, []);
 
+  // const ws = useContext(WsContext);
+
   useEffect(() => {
-    const request = {
-      id: 0,
-      jsonrpc: "2.0",
-      method: "Server.GetStatus",
-    };
-    const getSnapCastInfos = async () => {
+    const getSnapCastInfos =  async () => {
+      const request = {
+        id: 0,
+        jsonrpc: "2.0",
+        method: "Server.GetStatus",
+      };
       if (snapcastServerHost !== "") {
-        const ws = new WebSocket(`ws://${snapcastServerHost}/jsonrpc`);
+        // const ws = new WebSocket(`ws://${snapcastServerHost}/jsonrpc`);
         ws.addEventListener("message", (message) => {
+          console.log("APP", JSON.parse(message.data))
           if (
             message.data &&
             JSON.parse(message.data).id &&
@@ -119,19 +124,24 @@ function App() {
             setSnapcastStreams(streams);
             setSnapcastServer(server);
           }
-        });
-        ws.addEventListener("open", () =>
-          ws.send(JSON.stringify(++request.id && request))
-        );
+        });        
+        ws.send(JSON.stringify(++request.id && request))        
       }
     };
-
-    getTunebladeDevices();
     getSnapCastInfos();
+    // return () => {
+    //   cleanup
+    // }
+  }, [snapcastServerHost])
+
+  useEffect(() => {
+    getTunebladeDevices();    
     getConfig();
-  }, [getTunebladeDevices, snapcastServerHost]);
+  }, [getTunebladeDevices, getConfig]);
+
   return (
     <MuiThemeProvider theme={themeyz}>
+      <WsContext.Provider value={ws}>
       <div
         className="App"
         style={{ backgroundColor: themeyz.palette.background.default }}
@@ -280,6 +290,7 @@ function App() {
           </Button>
         </DialogActions>
       </Dialog>
+      </WsContext.Provider>
     </MuiThemeProvider>
   );
 }
