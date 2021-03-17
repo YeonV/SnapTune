@@ -12,17 +12,19 @@ const useStyles = makeStyles({
 });
 
 interface SliderConfig {
-  volume: any;
+  vol: any;
   id: string;
   groupMuted: boolean;
   deviceMuted: boolean;
   groupId: string;
   snapcastServerHost: string;
+  volume: {};
+  setVolume: any;
 }
 
 export default function DeviceSlider(config: SliderConfig) {
   const classes = useStyles();
-  const [value, setValue] = React.useState<number>(config.volume);
+  const [value, setValue] = React.useState<number>(config.vol);
   const [groupMuted, setGroupMuted] = React.useState<boolean>(
     config.groupMuted
   );
@@ -32,9 +34,17 @@ export default function DeviceSlider(config: SliderConfig) {
 
   const handleDrag = (event: any, newValue: number | number[]) => {
     setValue(newValue as number);
+    // config.setVolume({
+    //   ...config.volume,
+    //   [config.id]: newValue as number
+    // });
   };
   const handleRelease = async (event: any, newValue: number | number[]) => {
     setValue(newValue as number);
+    // config.setVolume({
+    //   ...config.volume,
+    //   [config.id]: newValue as number
+    // });
     const request = {
       id: "8",
       jsonrpc: "2.0",
@@ -48,29 +58,29 @@ export default function DeviceSlider(config: SliderConfig) {
     );
   };
 
-  useEffect(() => {
-    const onVolumeChanged = () => {
-      const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
-      ws.addEventListener("message", (message) => {
-        const { method, params } = JSON.parse(message.data);
-        if (method === "Client.OnVolumeChanged" && params.id === config.id) {
-          setValue(params.volume.percent);
-          setDeviceMuted(params.volume.muted);
-        }
-        if (method === "Group.OnMute" && params.id === config.groupId) {
-          setGroupMuted(params.mute);
-        }
-      });
-    };
+  // useEffect(() => {
+  //   const onVolumeChanged = () => {
+  //     const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
+  //     ws.addEventListener("message", (message) => {
+  //       const { method, params } = JSON.parse(message.data);
+  //       if (method === "Client.OnVolumeChanged" && params.id === config.id) {
+  //         setValue(params.volume.percent);
+  //         setDeviceMuted(params.volume.muted);
+  //       }
+  //       if (method === "Group.OnMute" && params.id === config.groupId) {
+  //         setGroupMuted(params.mute);
+  //       }
+  //     });
+  //   };
 
-    onVolumeChanged();
-  }, [
-    groupMuted,
-    deviceMuted,
-    config.groupId,
-    config.id,
-    config.snapcastServerHost,
-  ]);
+  //   onVolumeChanged();
+  // }, [
+  //   groupMuted,
+  //   deviceMuted,
+  //   config.groupId,
+  //   config.id,
+  //   config.snapcastServerHost,
+  // ]);
 
   return (
     <div className={classes.root}>
@@ -81,7 +91,7 @@ export default function DeviceSlider(config: SliderConfig) {
         <Grid item xs>
           <Slider
             disabled={groupMuted || deviceMuted}
-            value={value}
+            value={(config as any).volume[config.id] || 0}
             onChange={handleDrag}
             onChangeCommitted={handleRelease}
             aria-labelledby="continuous-slider"

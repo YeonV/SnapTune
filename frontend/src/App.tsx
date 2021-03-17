@@ -25,6 +25,7 @@ import { Color, ColorPicker } from "material-ui-color";
 
 function App() {
   const [test, setTest] = React.useState([[""], [""]]);
+  const [volume, setVolume] = React.useState({});
   const [snapcastGroups, setSnapcastGroups] = React.useState<any[]>([]);
   const [snapcastStreams, setSnapcastStreams] = React.useState<any>([]);
   const [snapcastServer, setSnapcastServer] = React.useState<any>({});
@@ -96,7 +97,7 @@ function App() {
       alert("No TuneBlade Server found");
     }
   }, []);
-
+  console.log(volume)
   useEffect(() => {
     const request = {
       id: 0,
@@ -107,11 +108,13 @@ function App() {
       if (snapcastServerHost !== "") {
         const ws = new WebSocket(`ws://${snapcastServerHost}/jsonrpc`);
         ws.addEventListener("message", (message) => {
+          
           if (
             message.data &&
             JSON.parse(message.data).id &&
             JSON.parse(message.data).id === 1
-          ) {
+            ) {
+              
             const { groups, server, streams } = JSON.parse(
               message.data
             ).result.server;
@@ -119,6 +122,25 @@ function App() {
             setSnapcastStreams(streams);
             setSnapcastServer(server);
           }
+          if (message.data) {
+            
+              console.log("INCOMING MESSAGE:", JSON.parse(message.data))
+              const { method, params } = JSON.parse(message.data);
+              if (method==='Client.OnVolumeChanged') {
+                // console.log("VOLUME_CHANGED", params.volume.percent, params.volume.muted)
+                setVolume({
+                  ...volume,
+                  [params.id]: params.volume.percent as number
+                });
+                // setValue(params.volume.percent);
+                // setDeviceMuted(params.volume.muted);                
+              }
+              if (method === "Group.OnMute") {
+                console.log("GROUP_MUTE_CHANGED", params.id, params.mute)
+                // && params.id === config.groupId
+                // setGroupMuted(params.mute);
+              }
+            }
         });
         ws.addEventListener("open", () =>
           ws.send(JSON.stringify(++request.id && request))
@@ -129,7 +151,7 @@ function App() {
     getTunebladeDevices();
     getSnapCastInfos();
     getConfig();
-  }, [getTunebladeDevices, snapcastServerHost]);
+  }, [getTunebladeDevices, snapcastServerHost,getConfig]);
   return (
     <MuiThemeProvider theme={themeyz}>
       <div
@@ -177,6 +199,8 @@ function App() {
                   number_clients={g.clients.length}
                   name={g.name || `Group ${i} (${g.clients.length} Clients)`}
                   snapcastServerHost={snapcastServerHost}
+                  volume={volume}
+                  setVolume={setVolume}
                 />
               ))}
           </div>

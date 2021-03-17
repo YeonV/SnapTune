@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface Device {
   name: string;
-  volume: number;
+  vol: number;
   ip: string;
   connected: boolean;
   groupMuted: boolean;
@@ -40,6 +40,8 @@ interface Device {
   id: string;
   groupId: string;
   snapcastServerHost: string;
+  volume: {};
+  setVolume: any;
 }
 
 export default function DeviceCard(config: Device) {
@@ -97,9 +99,11 @@ export default function DeviceCard(config: Device) {
           groupId={config.groupId}
           groupMuted={config.groupMuted}
           deviceMuted={config.deviceMuted}
-          volume={config.volume}
+          vol={config.vol}
           id={config.id}
           snapcastServerHost={config.snapcastServerHost}
+          volume={config.volume}
+          setVolume={config.setVolume}
         />
       </CardActions>
     </Card>

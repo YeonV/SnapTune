@@ -47,6 +47,8 @@ interface GroupConfig {
   groupMuted: boolean;
   snapcastStreams: [];
   snapcastServerHost: string;
+  volume: {};
+  setVolume: any;
 }
 
 export default function GroupCard(config: GroupConfig) {
@@ -131,7 +133,9 @@ export default function GroupCard(config: GroupConfig) {
             key={i}
             name={c.host.name}
             id={c.id}
-            volume={c.config.volume.percent}
+            vol={c.config.volume.percent}
+            volume={config.volume}
+            setVolume={config.setVolume}
             groupId={config.id}
             groupMuted={config.groupMuted}
             deviceMuted={c.config.volume.muted}
