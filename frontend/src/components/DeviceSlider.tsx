@@ -5,7 +5,6 @@ import Slider from "@material-ui/core/Slider";
 import VolumeDown from "@material-ui/icons/VolumeDown";
 import VolumeUp from "@material-ui/icons/VolumeUp";
 import { WsContext } from './Websocket';
-// import ws from "./Websocket"
 
 const useStyles = makeStyles({
   root: {
@@ -24,19 +23,14 @@ interface SliderConfig {
 
 export default function DeviceSlider(config: SliderConfig) {
   const classes = useStyles();
-  const [value, setValue] = React.useState<number>(config.volume);
-  const [groupMuted, setGroupMuted] = React.useState<boolean>(
-    config.groupMuted
-  );
-  const [deviceMuted, setDeviceMuted] = React.useState<boolean>(
-    config.deviceMuted
-  );
+  const [vol, setVol] = React.useState<number>(config.volume);
+  const [groupMuted, setGroupMuted] = React.useState<boolean>(config.groupMuted);
+  const [deviceMuted, setDeviceMuted] = React.useState<boolean>(config.deviceMuted);
   const ws = useContext(WsContext);
 
-
   const handleDrag = (event: any, newValue: number | number[]) => {
-    if (newValue !== value) {
-      setValue(newValue as number);
+    if (newValue !== vol) {
+      setVol(newValue as number);
       const request = {
         id: 8,
         jsonrpc: "2.0",
@@ -47,30 +41,19 @@ export default function DeviceSlider(config: SliderConfig) {
     }
   };
 
-  useEffect(() => {
-    const onVolumeChanged = () => {
-      ws.addEventListener("message", (message) => {
-        console.log("SLIDER", JSON.parse(message.data))
-        const { method, params } = JSON.parse(message.data);
-        if (method === "Client.OnVolumeChanged" && params.id === config.id) {
-          setValue(params.volume.percent);
-          setDeviceMuted(params.volume.muted);
-        }
-        if (method === "Group.OnMute" && params.id === config.groupId) {
-          setGroupMuted(params.mute);
-        }
-      });
-    };
-
-    onVolumeChanged();
-  }, [
-    ws,
-    groupMuted,
-    deviceMuted,
-    config.groupId,
-    config.id,
-    config.snapcastServerHost,
-  ]);
+  useEffect(() => {    
+    document.addEventListener("Client.OnVolumeChanged", e=>{             
+      if ((e as any).detail.id === config.id) {
+        setVol((e as any).detail.volume.percent);
+        setDeviceMuted((e as any).detail.volume.muted);
+      }
+    })
+    document.addEventListener("Group.OnMute", e=>{           
+      if ((e as any).detail.id === config.id) {                     
+        setGroupMuted((e as any).detail.mute);
+      }
+    })
+  }, [config.id]);
 
   return (
     <div className={classes.root}>
@@ -81,7 +64,7 @@ export default function DeviceSlider(config: SliderConfig) {
         <Grid item xs>
           <Slider
             disabled={groupMuted || deviceMuted}
-            value={value}
+            value={vol}
             onChange={handleDrag}
             aria-labelledby="continuous-slider"
           />

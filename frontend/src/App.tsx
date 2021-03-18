@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import snap from "./static/images/snapcast-blue-blademod.png";
 import tuneblade from "./static/images/tuneblade.svg";
 import tunebladeLogo from "./static/images/tuneblade_150_blue.png";
@@ -14,7 +14,6 @@ import {
   DialogContentText,
   DialogTitle,
   Grid,
-  // InputAdornment,
   Typography,
   TextField,
 } from "@material-ui/core";
@@ -78,6 +77,7 @@ function App() {
     const res = await fetch("/api/get");
     if (res.status === 200) {
       const resp = await res.text();
+      console.log(resp)
       if (resp.startsWith("MASTER ")) {
         const devices = resp.split("\n").filter((d) => d !== "");
         const deviceList = devices.map((d, i) =>
@@ -89,17 +89,52 @@ function App() {
       }
     }
   }, []);
+
   const getConfig = useCallback(async () => {
     const res = await fetch("/api/config");
     if (res.status === 200) {
       const resp = await res.json();
       setSnapcastServerHost(resp.snap);
+      window.localStorage.setItem("snap", resp.snap)
     } else {
       alert("No TuneBlade Server found");
     }
   }, []);
+  
+  const eventListeners:any = useRef();
+  
+  const messageHandler = useCallback((message:any) => {
+    // console.log("MESSAGE", JSON.parse(message.data))
+    const { method, params } = JSON.parse(message.data);
 
-  // const ws = useContext(WsContext);
+    if (message.data &&
+      JSON.parse(message.data).id &&
+      JSON.parse(message.data).id === 1
+      ) {           
+        const { groups, server, streams } = JSON.parse(
+          message.data
+        ).result.server;
+        setSnapcastGroups(groups);
+        setSnapcastStreams(streams);
+        setSnapcastServer(server);
+    }
+    if (method === "Group.OnMute") {           
+      document.dispatchEvent(new CustomEvent('Group.OnMute', { detail: params }))    
+    }
+    if (method === "Client.OnVolumeChanged") {        
+      document.dispatchEvent(new CustomEvent('Client.OnVolumeChanged', { detail: params }))    
+    }
+  },[])
+  
+    
+  useEffect(() => {
+    ws.removeEventListener("message", message => eventListeners.current(message))
+    eventListeners.current = messageHandler
+    ws.addEventListener("message", message => eventListeners.current(message));
+    return () => {
+      ws.removeEventListener("message", message => eventListeners.current(message))
+    }
+  }, [messageHandler])
 
   useEffect(() => {
     const getSnapCastInfos =  async () => {
@@ -108,26 +143,11 @@ function App() {
         jsonrpc: "2.0",
         method: "Server.GetStatus",
       };
-      if (snapcastServerHost !== "") {
-        // const ws = new WebSocket(`ws://${snapcastServerHost}/jsonrpc`);
-        ws.addEventListener("message", (message) => {
-          console.log("APP", JSON.parse(message.data))
-          if (
-            message.data &&
-            JSON.parse(message.data).id &&
-            JSON.parse(message.data).id === 1
-          ) {
-            const { groups, server, streams } = JSON.parse(
-              message.data
-            ).result.server;
-            setSnapcastGroups(groups);
-            setSnapcastStreams(streams);
-            setSnapcastServer(server);
-          }
-        });        
+      if (snapcastServerHost !== "") {      
         ws.send(JSON.stringify(++request.id && request))        
       }
     };
+    
     getSnapCastInfos();
     // return () => {
     //   cleanup

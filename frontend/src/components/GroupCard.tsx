@@ -58,25 +58,24 @@ export default function GroupCard(config: GroupConfig) {
     (s: { id: "" }) => s.id === config.stream_id
   );
   const handleMute = () => {
-    // const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
     const request = {
       id: "8",
       jsonrpc: "2.0",
       method: "Group.SetMute",
       params: { id: config.id, mute: !groupMuted },
     };    
-    ws.send(JSON.stringify(++(request as any).id && request))    
+    ws.send(JSON.stringify(++(request as any).id && request))
+    setGroupMuted(!groupMuted)
   };
+  
   useEffect(() => {
-    // const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
-    ws.addEventListener("message", (message) => {
-      console.log("GROUP", JSON.parse(message.data))
-      const { method, params } = JSON.parse(message.data);
-      if (method === "Group.OnMute" && params.id === config.id) {
-        setGroupMuted(params.mute);
+    document.addEventListener("Group.OnMute", e=>{           
+      if ((e as any).detail.id === config.id) {                     
+        setGroupMuted((e as any).detail.mute);
       }
-    });
-  }, [groupMuted, config.id,ws]);
+    })
+  }, [config.id]);
+
   return (
     <Card className={classes.root}>
       <div

@@ -45,37 +45,30 @@ interface Device {
 
 export default function DeviceCard(config: Device) {
   const classes = useStyles();
-  const [deviceMuted, setDeviceMuted] = React.useState<boolean>(
-    config.deviceMuted
-  );
+  const [deviceMuted, setDeviceMuted] = React.useState<boolean>(config.deviceMuted);
   const ws = useContext(WsContext);
 
   const handleMute = () => {
-    // const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
     const request = {
       id: "8",
       jsonrpc: "2.0",
       method: "Client.SetVolume",
       params: { id: config.id, volume: { muted: !deviceMuted } },
-    };
-    
-      ws.send(JSON.stringify(++(request as any).id && request))
-    
+    };    
+    ws.send(JSON.stringify(++(request as any).id && request))
+    setDeviceMuted(!deviceMuted);
   };
 
   useEffect(() => {
     const onVolumeChanged = () => {
-      // const ws = new WebSocket(`ws://${config.snapcastServerHost}/jsonrpc`);
-      ws.addEventListener("message", (message) => {
-        console.log("CARD", JSON.parse(message.data))
-        const { method, params } = JSON.parse(message.data);
-        if (method === "Client.OnVolumeChanged" && params.id === config.id) {
-          setDeviceMuted(params.volume.muted);
+      document.addEventListener("Client.OnVolumeChanged", e=>{
+          if ((e as any).detail.id === config.id) { 
+          setDeviceMuted((e as any).detail.volume.muted);
         }
-      });
+      })
     };
     onVolumeChanged();
-  }, [deviceMuted, config.id, config.groupMuted, ws]);
+  }, [config.id]);
 
   return (
     <Card className={classes.root}>
