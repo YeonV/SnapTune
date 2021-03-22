@@ -8,7 +8,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import DeviceCard from "./DeviceCard";
 import { VolumeUp, VolumeOff } from "@material-ui/icons";
 import { Select, Typography } from "@material-ui/core";
-import { WsContext } from './Websocket';
+import { WsContext } from "./Websocket";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -26,6 +26,7 @@ const useStyles = makeStyles((theme: Theme) =>
       "&> div:last-child": {
         flexDirection: "column",
         justifyContent: "center",
+        padding: 0,
       },
     },
     subline: {
@@ -52,10 +53,11 @@ interface GroupConfig {
 
 export default function GroupCard(config: GroupConfig) {
   const classes = useStyles();
-  const [groupMuted, setGroupMuted] = useState<any>(config.groupMuted);
   const ws = useContext(WsContext);
-  const currentStream = config.snapcastStreams.find(
-    (s: { id: "" }) => s.id === config.stream_id
+  const [groupMuted, setGroupMuted] = useState<any>(config.groupMuted);
+  const [groupName, setGroupName] = useState<string>(config.name);
+  const [currentStream, setCurrentStream] = useState<any>(
+    config.snapcastStreams.find((s: { id: "" }) => s.id === config.stream_id)
   );
   const handleMute = () => {
     const request = {
@@ -63,18 +65,46 @@ export default function GroupCard(config: GroupConfig) {
       jsonrpc: "2.0",
       method: "Group.SetMute",
       params: { id: config.id, mute: !groupMuted },
-    };    
-    ws.send(JSON.stringify(++(request as any).id && request))
-    setGroupMuted(!groupMuted)
+    };
+    ws.send(JSON.stringify(++(request as any).id && request));
+    setGroupMuted(!groupMuted);
   };
-  
+
   useEffect(() => {
-    document.addEventListener("Group.OnMute", e=>{           
-      if ((e as any).detail.id === config.id) {                     
-        setGroupMuted((e as any).detail.mute);
-      }
-    })
-  }, [config.id]);
+    const onMuteChanged = () => {
+      document.addEventListener("Group.OnMute", (e) => {
+        if ((e as any).detail.id === config.id) {
+          setGroupMuted((e as any).detail.mute);
+        }
+      });
+    };
+    const onNameChanged = () => {
+      document.addEventListener("Group.OnNameChanged", (e) => {
+        if ((e as any).detail.id === config.id) {
+          setGroupName((e as any).detail.name);
+        }
+      });
+    };
+    const onStreamChanged = () => {
+      document.addEventListener("Group.OnStreamChanged", (e) => {
+        console.log("CHANGING GROUP-STREAM", e);
+        // if ((e as any).detail.id === config.stream_id) {
+        //   setCurrentStream((e as any).detail.stream);
+        // }
+      });
+    };
+    const onStreamUpdate = () => {
+      document.addEventListener("Stream.OnUpdate", (e) => {
+        if ((e as any).detail.id === config.stream_id) {
+          setCurrentStream((e as any).detail.stream);
+        }
+      });
+    };
+    onStreamChanged();
+    onStreamUpdate();
+    onMuteChanged();
+    onNameChanged();
+  }, [config.id, config.stream_id]);
 
   return (
     <Card className={classes.root}>
@@ -91,7 +121,7 @@ export default function GroupCard(config: GroupConfig) {
           </Avatar>
         </IconButton>
         <div>
-          <Typography>{config.name}</Typography>
+          <Typography>{groupName}</Typography>
           <div
             style={{
               display: "flex",
@@ -128,13 +158,14 @@ export default function GroupCard(config: GroupConfig) {
         {config.clients?.map((c: any, i: number) => (
           <DeviceCard
             key={i}
-            name={c.host.name}
+            name={c.config.name !== "" ? c.config.name : c.host.name}
             id={c.id}
             volume={c.config.volume.percent}
             groupId={config.id}
-            groupMuted={config.groupMuted}
+            groupMuted={groupMuted}
             deviceMuted={c.config.volume.muted}
             connected={c.connected}
+            latency={c.config.latency}
             ip={c.host.ip}
             snapcastServerHost={config.snapcastServerHost}
           />

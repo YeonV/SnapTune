@@ -17,14 +17,8 @@
 # CMD ["nginx", "-g", "daemon off;"]
 # dockerfile
 # stage 1
-FROM node:14.16.0-alpine as build
-WORKDIR /app
-ENV PATH /app/node_modules/.bin:$PATH
-COPY . /app
-RUN yarn
-RUN yarn build
 # # stage 2
 FROM nginx:1.16.0-alpine
-COPY --from=build /app/build /usr/share/nginx/html
+COPY ./build /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
